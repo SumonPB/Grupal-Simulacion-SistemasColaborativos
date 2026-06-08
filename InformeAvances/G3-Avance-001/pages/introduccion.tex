@@ -1,0 +1,24 @@
+\section{Introducción}
+
+En la actualidad, las instituciones de educación superior dependen de manera crítica de sus infraestructuras de red local (LAN) para coordinar actividades académicas, administrativas y de investigación. Esta alta densidad de dispositivos interconectados crea entornos propicios para la dispersión acelerada de amenazas cibernéticas autopropagables, donde la afectación de un solo nodo vulnerable puede comprometer la totalidad del sistema. Entre estas amenazas, los ataques de ransomware representan uno de los peligros más severos para la integridad de los datos. Un caso de referencia histórico es el brote de WannaCry en el año 2017, el cual explota la vulnerabilidad del protocolo Server Message Block (SMBv1) en el puerto TCP 445 mediante el exploit EternalBlue. Este evento resalta la necesidad de diseñar e implementar modelos de simulación que ayuden a predecir y contener este tipo de incidentes.
+
+La literatura científica evidencia que el estudio de la dispersión de malware se beneficia significativamente de los enfoques matemáticos y computacionales. Autores como Chernikova et al. \cite{chernikova2023modeling} señalan que los modelos epidemiológicos tradicionales permiten caracterizar el comportamiento de códigos maliciosos autopropagables en redes complejas. Por su parte, el trabajo de Padilla et al. \cite{padilla2025serdux} demuestra que la integración de modelos compartimentales con simulación basada en agentes (ABM) resulta idónea para representar dinámicas de propagación en infraestructuras críticas organizacionales. Asimismo, Kato et al. \cite{kato2025agent} analizan los riesgos sistémicos en redes financieras mediante simulaciones basadas en agentes frente a ransomware de propagación lateral, aportando metodologías para medir el impacto financiero y operativo. Para modelar estas dinámicas complejas en entornos reales, la plataforma GIS Agent-based Modeling Architecture (GAMA) destaca como una herramienta robusta gracias a su capacidad de procesar datos georreferenciados y definir comportamientos independientes para cada dispositivo de red, permitiendo simular redes espaciales explictas \cite{math2024paradigm, ieee2025optimal}.
+
+El propósito de esta investigación es el desarrollo y análisis de un escenario controlado dentro de una red universitaria. La importancia del proyecto radica en que permite a los administradores de red comprender visual y cuantitativamente la velocidad de dispersión lateral del malware y evaluar la efectividad de las políticas de seguridad informática implementadas antes de que ocurra un desastre real.
+
+El proyecto plantea los siguientes objetivos académicos:
+
+\subsection{Objetivo General}
+Desarrollar una simulación basada en agentes utilizando GAMA Platform que permita analizar la propagación de un ransomware tipo WannaCry dentro de una red universitaria y evaluar una estrategia básica de respuesta ante una infección masiva.
+
+\subsection{Objetivos Específicos}
+\begin{itemize}
+    \item Diseñar una representación virtual de una red LAN universitaria.
+    \item Modelar laboratorios, equipos y dispositivos de comunicación mediante agentes.
+    \item Simular el ingreso de una amenaza externa hacia la infraestructura interna.
+    \item Implementar reglas probabilísticas de propagación del ransomware basándose en vulnerabilidades del protocolo SMB.
+    \item Evaluar el impacto cuantitativo del ataque sobre los equipos conectados.
+    \item Implementar un protocolo de contingencia automatizado para limitar la expansión lateral del ataque.
+\end{itemize}
+
+El método que se propone en este trabajo consiste en el diseño de un modelo en la plataforma GAMA, el cual consume datos geográficos de salas y nodos elaborados previamente en QGIS. A través de este modelo, se configuran agentes autónomos de red con características de firewall, switch y estaciones de trabajo vulnerables. Los resultados preliminares muestran que la propagación lateral satura rápidamente la red cuando no existen controles activos, pero la activación oportuna de un protocolo de contingencia basado en el aislamiento de equipos al superar un umbral crítico de infección mitiga considerablemente el alcance del ransomware, preservando la continuidad operativa del resto de los laboratorios.

@@ -1,0 +1,279 @@
+\section{Anexos}
+
+\subsection{Código Fuente de la Simulación en GAML}
+En este anexo se presenta el código completo de la simulación desarrollada en la plataforma GAMA utilizando el lenguaje GAML (\textit{GAMA Modeling Language}). Este código carga los archivos vectoriales geográficos, inicializa los agentes de red con sus respectivas configuraciones de vulnerabilidad, y ejecuta el motor de propagación del ataque de ransomware WannaCry junto con la lógica de activación del protocolo de contingencia.
+
+Adicionalmente, todo el código fuente y los recursos complementarios de esta simulación se encuentran alojados de manera pública en el siguiente repositorio de GitHub: \\
+\url{https://github.com/Dennis290699/Grupal-Simulacion-SistemasColaborativos/tree/main/Simulacion/Grupal_Redes}
+
+\newpage
+\begin{lstlisting}[caption={Código fuente de la simulación basada en agentes (InfeccionRedes.gaml)}]
+model InfeccionRedesGIS
+
+species sala {
+	string nombre;
+
+	aspect default {
+		draw shape color: rgb(165, 75, 75, 100) border: #black;
+	}
+
+}
+
+global {
+// Carga de archivos Shapefile
+	file nodos_file <- file("../includes/nodos.shp");
+	file conexiones_file <- file("../includes/conexiones.shp");
+	file salas_file <- file("../includes/sala.shp");
+
+	// FIX ESPACIAL: El mundo se adapta al nodo más lejano para que quepan los nodos de afuera
+	geometry shape <- envelope(nodos_file);
+	float firewall_strength <- 0.7;
+	int cooldown_min <- 3;
+	int cooldown_max <- 8;
+
+	init {
+	// =====================================================
+	// 1. CARGA DE SALAS
+	// =====================================================
+		create sala from: salas_file {
+			nombre <- string(read("nombre"));
+		}
+
+		// =====================================================
+		// 2. CARGA DE NODOS
+		// =====================================================
+		create computer from: nodos_file {
+			id <- int(read("id"));
+			nombre <- string(read("nombre"));
+			string tipoNodo <- string(read("tipo"));
+
+			// Configuración de tipos de agentes
+			is_server <- (tipoNodo = "server");
+			is_internet <- (tipoNodo = "internet");
+			is_firewall <- (tipoNodo = "firewall");
+			is_switch <- (tipoNodo = "switch");
+			if is_internet {
+    infected <- true;
+}
+else {
+    infected <- false;
+}
+			secured <- false;
+			isolated <- false;
+			patch_level <- rnd(100);
+if tipoNodo = "pc" 
+or is_server 
+or is_switch 
+or is_firewall {
+
+	open_ports <- [445,3389,80];
+
+}
+else {
+
+	open_ports <- [];
+
+}
+
+			write "NODO CARGADO -> ID: " + string(id) + " | Nombre: " + nombre + " | Tipo: " + tipoNodo;
+		}
+
+		// =====================================================
+		// 3. CARGA DE CONEXIONES (Mapeo de Topología)
+		// =====================================================
+		create connection from: conexiones_file {
+			int o <- int(read("origen"));
+			int d <- int(read("destino"));
+
+			// Buscamos los agentes computadora cuyos IDs coincidan con origen y destino
+			list<computer> so <- computer where (each.id = o);
+			list<computer> de <- computer where (each.id = d);
+			if !empty(so) and !empty(de) {
+				source <- first(so);
+				target <- first(de);
+
+				// Conservamos la línea exacta que dibujaste en QGIS
+				geom <- shape;
+				write "CONEXIÓN OK: " + string(o) + " -> " + string(d);
+			} else {
+				write "CONEXION INVALIDA: " + string(o) + " -> " + string(d) + " (Revisa los IDs en QGIS)";
+			}
+
+		}
+
+		write "=== RESUMEN DE CARGA ===";
+		write "Total Nodos cargados: " + length(computer);
+		write "Total Links válidos: " + length(connection);
+	}
+
+}
+
+// =====================================================
+// ESPECIE: COMPUTADORAS / DISPOSITIVOS
+// =====================================================
+species computer {
+	int id;
+	string nombre;
+	bool is_server <- false;
+	bool is_internet <- false;
+	bool is_firewall <- false;
+	bool is_switch <- false;
+	bool infected <- false;
+	bool secured <- false;
+	bool isolated <- false;
+	list<int> open_ports <- [];
+	int patch_level <- 0;
+	int cooldown <- 0;
+
+	reflex activity {
+		if cooldown > 0 {
+			cooldown <- cooldown - 1;
+		}
+
+	}
+
+	// Lógica de propagación de infección
+	reflex spread when: infected {
+		if cooldown > 0 {
+			return;
+		}
+
+		// Buscamos conexiones salientes desde este nodo
+		list<connection> outs <- connection where 
+(each.source = self or each.target = self);
+		if empty(outs) {
+			return;
+		}
+
+		// Seleccionamos una conexión al azar e infectamos al vecino
+		connection c <- one_of(outs);
+		computer target_node;
+
+
+if c.source = self {
+	target_node <- c.target;
+}
+else {
+	target_node <- c.source;
+}
+		float p <- 0.35;
+
+
+// Firewall intenta bloquear ataques
+
+if target_node.is_firewall {
+
+	p <- p * (1.0 - firewall_strength);
+
+}
+		if 445 in target_node.open_ports {
+			p <- p * (1.0 - patch_level / 150.0);
+		}
+
+		if flip(p) {
+			target_node.infected <- true;
+			write "¡ALERTA! El nodo [" + target_node.nombre + "] ha sido INFECTADO por [" + self.nombre + "]";
+		}
+
+		cooldown <- rnd(5) + 2;
+	}
+
+aspect default {
+
+	float tam_nodo <- 0.2;
+
+
+	// ===========================
+	// NODOS INFECTADOS
+	// ===========================
+
+	if infected {
+
+		draw circle(tam_nodo)
+		color:#red;
+
+
+	}
+	else if is_firewall {
+
+
+		draw square(tam_nodo)
+		color:#blue;
+
+
+	}
+	else if is_switch {
+
+
+		draw square(tam_nodo)
+		color:#gray;
+
+
+	}
+	else if is_internet {
+
+
+		draw circle(tam_nodo)
+		color:#yellow;
+
+
+	}
+	else if is_server {
+
+	draw square(tam_nodo)
+	color:#purple;
+
+}
+	else {
+
+
+		draw circle(tam_nodo)
+		color:#green;
+
+
+	}
+
+
+
+	draw string(nombre)
+	at: location + {0,-tam_nodo * 1.5}
+	color:#black
+	font: font("SansSerif",8,#bold);
+
+}}
+
+	// =====================================================
+// ESPECIE: CONEXIONES (LÍNEAS DE RED)
+// =====================================================
+species connection {
+    computer source;
+    computer target;
+    geometry geom;
+
+    aspect default {
+        // Ponemos un width bien bajo (ej: 0.05 o 0.1)
+        if geom != nil {
+            draw geom color: #orange width: 5;
+        } else if source != nil and target != nil {
+            draw line([source.location, target.location]) color: #orange width: 0.4;
+        }
+    }
+}
+
+// =====================================================
+// EXPERIMENTO / INTERFAZ GRÁFICA
+// =====================================================
+experiment Infeccion type: gui {
+	output {
+		display mapa_red {
+			species sala; // 1. El fondo marron de la sala
+			species connection; // 2. Los cables naranja
+			species computer; // 3. Los nodos encima (asi nada los tapa)
+		}
+
+		monitor "Equipos Infectados" value: length(computer where each.infected);
+		monitor "Equipos Sanos" value: length(computer where !each.infected);
+	}
+
+}
+\end{lstlisting}
