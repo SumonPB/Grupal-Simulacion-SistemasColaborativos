@@ -5,6 +5,7 @@ Trabajo Grupal de la catedra Sistemas Colaborativos
 - Trujillo Vistin Dennis Adrian
 - Loya Cadena Bryan Eduardo
 - Condolo Narvaez Byron Paul
+- Ledesma Aguilar Kelly Denisse
 
 ## Descripción del proyecto
 

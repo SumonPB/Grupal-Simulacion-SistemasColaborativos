@@ -1,0 +1,17 @@
+\section{Conclusiones}
+
+Tras concluir las simulaciones de propagación de ransomware y analizar los datos experimentales, se formularon las siguientes conclusiones directamente alineadas con los objetivos planteados:
+
+\begin{itemize}
+    \item Se diseñó de forma exitosa una representación virtual y espacial de la infraestructura de red LAN universitaria compuesta por siete laboratorios de computación. La integración de los shapefiles de QGIS en la plataforma GAMA demostró ser una solución eficiente para mapear de manera realista la disposición física de los activos informáticos y su interconectividad.
+    
+    \item Se modelaron satisfactoriamente los laboratorios, servidores, switches, cortafuegos y estaciones de trabajo mediante agentes autónomos. La asignación de parámetros lógicos específicos para cada agente (tales como puertos abiertos, estado de infección y niveles de actualización) permitió dotar a los dispositivos de un comportamiento individualizado y heterogéneo coherente con una red real.
+    
+    \item Se simuló de manera precisa el vector de entrada de la amenaza externa desde el agente de Internet hacia la LAN interna. Dicha simulación evidenció que, aunque la barrera perimetral provista por el cortafuegos disminuyó la velocidad de intrusión inicial, fue incapaz de evitar que el ataque vulnerase la red en exposiciones prolongadas.
+    
+    \item Se implementaron reglas de propagación de carácter probabilístico basadas en el comportamiento histórico del ransomware WannaCry. La correlación del puerto SMB TCP 445 con variables de vulnerabilidad personalizadas (\textit{patch\_level}) posibilitó recrear la dispersión lateral de forma autónoma a través de los enlaces de red.
+    
+    \item Se evaluó cuantitativamente el impacto destructivo del ransomware sobre el ecosistema universitario. El escenario sin respuesta demostró una vulnerabilidad crítica, puesto que el ataque comprometió el 100\% de las estaciones de trabajo del campus en escasos ciclos de simulación, dejando inoperativos los laboratorios informáticos.
+    
+    \item Se implementó y evaluó un protocolo de contingencia automatizado como medida de contención. La activación del aislamiento lógico al superar el 30\% de nodos infectados limitó eficazmente el avance lateral del virus, consiguiendo preservar el 70\% de la red académica y validando que la respuesta reactiva automatizada es la defensa más eficaz ante brotes a gran escala.
+\end{itemize}

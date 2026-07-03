@@ -1,0 +1,57 @@
+\section{Metodología}
+
+La metodología para el diseño, ejecución y evaluación de la simulación de propagación del ransomware se estructuró de forma cronológica en cinco fases consecutivas. Todas las actividades y desarrollos se redactaron en tiempo pasado, reflejando el proceso experimental completado.
+
+\subsection{Fase 1: Concepción del Modelo y Definición de Agentes}
+En esta fase inicial, se definieron los agentes que representaron la infraestructura física y lógica de la red universitaria. Los agentes modelados se clasificaron en tres tipos fundamentales:
+\begin{itemize}
+    \item \textbf{Agente Sala:} Representó el espacio físico de los laboratorios universitarios.
+    \item \textbf{Agente Nodo (Computer):} Modeló los dispositivos interconectados, subdivididos según su función específica en: \textit{pc}, \textit{server}, \textit{switch}, \textit{firewall} e \textit{internet}.
+    \item \textbf{Agente Conexión:} Representó los enlaces físicos de red LAN y WAN que comunican los nodos.
+\end{itemize}
+
+\subsection{Fase 2: Carga y Preparación de Datos Georreferenciados (GIS)}
+Se utilizó el sistema de información geográfica QGIS para trazar de forma exacta la ubicación de las salas, los dispositivos y el cableado de red. Los archivos generados se cargaron dinámicamente en la plataforma GAMA mediante archivos vectoriales de tipo Shapefile:
+\begin{itemize}
+    \item \textit{sala.shp} para el contorno de las salas.
+    \item \textit{nodos.shp} para la posición y atributos iniciales de las computadoras.
+    \item \textit{conexiones.shp} para la topología física de los enlaces.
+\end{itemize}
+El entorno de simulación adaptó automáticamente sus dimensiones geométricas a los límites definidos en estos archivos espaciales.
+
+\subsection{Fase 3: Implementación del Motor de Infección y Propagación}
+El ransomware WannaCry se propagó explotando vulnerabilidades del protocolo SMB (puerto 445). Se establecieron reglas matemáticas para determinar la probabilidad de éxito en la transmisión del malware a través de los enlaces activos de red.
+
+Se definió una probabilidad base de infección por contacto $p_0 = 0.35$. En cada ciclo de simulación, para un nodo infectado $i$ y un vecino susceptible $j$, se calcularon las probabilidades de infección de acuerdo con las siguientes ecuaciones:
+
+Si el nodo destino $j$ representó un cortafuegos (firewall), la probabilidad de transmisión se redujo según el factor de mitigación del firewall $\alpha_{fw} = 0.70$, tal como se detalla en la Ecuación \ref{eq:firewall}:
+\begin{equation}\label{eq:firewall}
+P_{inf}(j) = p_0 \cdot (1 - \alpha_{fw})
+\end{equation}
+
+Si el dispositivo destino $j$ presentó el puerto TCP 445 abierto, la probabilidad de infección se ajustó de forma inversa al nivel de actualización del sistema operativo del nodo, denotado por $L_{patch}(j) \in [0, 100]$, tal como se muestra en la Ecuación \ref{eq:patch}:
+\begin{equation}\label{eq:patch}
+P_{inf}(j) = P_{inf}(j) \cdot \left(1 - \frac{L_{patch}(j)}{150}\right)
+\end{equation}
+
+En caso de que el nodo no presentase el puerto vulnerable habilitado, la probabilidad no sufrió mitigación alguna por parcheo. Así, la probabilidad de propagación final combinada se expresó en la Ecuación \ref{eq:prob_final}:
+\begin{equation}\label{eq:prob_final}
+P(i \to j) = P_{inf}(j)
+\end{equation}
+
+La transición del estado del nodo $j$ de "Sano" a "Infectado" en el tiempo $t+1$ se determinó mediante una distribución de probabilidad uniforme $U(0,1)$, descrita en la Ecuación \ref{eq:transicion}:
+\begin{equation}\label{eq:transicion}
+\text{Estado}_j(t+1) = \begin{cases} \text{Infectado} & \text{si } U(0,1) < P(i \to j) \\ \text{Sano} & \text{en caso contrario} \end{cases}
+\end{equation}
+
+\subsection{Fase 4: Configuración del Protocolo de Contingencia}
+Se programó un monitor de control centralizado encargado de supervisar el porcentaje de infección global en la red. Se definió un umbral crítico del 30\% del total de equipos conectados. Cuando la infección igualó o superó dicho valor, se activó de manera automática un protocolo de seguridad, ejecutando el aislamiento lógico de los nodos no comprometidos (`isolated = true`) y simulando la aplicación masiva de parches de seguridad y cierre de puertos vulnerables (`secured = true`).
+
+\subsection{Fase 5: Ejecución de Experimentos y Resultados}
+Se configuraron dos escenarios para medir cuantitativamente el comportamiento del ataque:
+
+\subsubsection{Escenario A: Propagación Libre (Sin Respuesta)}
+En este experimento, se desactivó el protocolo de respuesta ante incidentes. El virus ingresó por el nodo simulador de Internet, atravesó el cortafuegos y el switch central, y avanzó lateralmente por la red en estrella y en cascada hacia los laboratorios. El ataque se propagó de forma exponencial y saturó la infraestructura LAN rápidamente. Alrededor del ciclo 50, el 100\% de las computadoras vulnerables terminaron en estado infectado, demostrando la alta peligrosidad de las amenazas autopropagables sin mecanismos reactivos activos.
+
+\subsubsection{Escenario B: Propagación Controlada (Con Respuesta Activa)}
+En este experimento, se habilitó el protocolo de contingencia automatizado. El proceso de infección inicial avanzó de manera idéntica al escenario anterior. Sin embargo, al alcanzar el ciclo 24, la cantidad de equipos comprometidos superó el umbral crítico del 30\% (aproximadamente 40 nodos de los 132 totales). En ese instante, el sistema ejecutó el protocolo de contención. Los nodos sanos restantes quedaron blindados y aislados lógicamente, bloqueando el avance del malware. La curva de infección se aplanó inmediatamente, preservando el 70\% de la red académica y evitando una denegación de servicios generalizada en la universidad.
