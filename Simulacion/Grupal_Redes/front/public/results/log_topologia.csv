@@ -1,8 +1,0 @@
-origen,destino,tipo_origen,tipo_destino
-pc1,pc2,pc,pc
-pc2,pc4,pc,pc
-pc4,pc3,pc,pc
-pc3,pc1,pc,pc
-sw1,fw1,switch,firewall
-fw1,internet,firewall,internet
-pc1,sw1,pc,switch

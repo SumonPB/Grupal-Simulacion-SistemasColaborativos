@@ -1,8 +1,0 @@
-encabezado_hist_gen
-escenario,firewall_strength,initial_patch_level,containment_threshold,total_nodos,total_salas,total_pcs,total_switches,total_firewall
-Personalizado,0.7,10.0,30.0,7,1,4,1,1
-E1 - Real 2017,0.1,5.0,5.0,7,1,4,1,1
-E2 - Solo firewall,0.9,5.0,10.0,7,1,4,1,1
-E3 - Solo parches,0.1,80.0,20.0,7,1,4,1,1
-E4 - SOC activo,0.5,30.0,80.0,7,1,4,1,1
-E5 - Red segura,1.0,100.0,90.0,7,1,4,1,1
